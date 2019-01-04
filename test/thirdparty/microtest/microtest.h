@@ -206,6 +206,7 @@ namespace mt {
 }
 
 
+/*
 #define TEST_MAIN() \
   int main(int argc, char *argv[]) {\
     mt::Runtime::args(argc, argv);\
@@ -220,5 +221,5 @@ namespace mt {
       return -1;\
     }\
   }
-
+*/
 #endif // __MICROTEST_H__
