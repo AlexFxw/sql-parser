@@ -419,12 +419,21 @@ create_statement:
 			$$->tableName = $4.name;
 			$$->filePath = $8;
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
 			$$->tableName = $4.name;
 			$$->columns = $6;
+		}
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' PRIMARY KEY '(' ident_commalist ')' ')' {
+			$$ = new CreateStatement(kCreateTable);
+			$$->ifNotExists = $3;
+			$$->schema = $4.schema;
+			$$->tableName = $4.name;
+			$$->columns = $6;
+			$$->primaryKeys = $11;
+
 		}
 	|	CREATE VIEW opt_not_exists table_name opt_column_list AS select_statement {
 			$$ = new CreateStatement(kCreateView);
@@ -450,7 +459,6 @@ column_def:
 		IDENTIFIER column_type opt_column_nullable {
 			$$ = new ColumnDefinition($1, $2, $3);
 		}
-	;
 
 column_type:
 		INT { $$ = ColumnType{DataType::INT}; }

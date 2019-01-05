@@ -62,6 +62,7 @@ namespace hsql {
     std::vector<ColumnDefinition*>* columns; // default: nullptr
     std::vector<char*>* viewColumns;
     SelectStatement* select;
+    std::vector<char*>* primaryKeys;
   };
 
 } // namespace hsql
