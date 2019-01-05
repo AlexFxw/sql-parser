@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.1.  */
+/* A Bison parser, made by GNU Bison 3.2.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
@@ -30,6 +30,9 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
+
 #ifndef YY_HSQL_BISON_PARSER_H_INCLUDED
 # define YY_HSQL_BISON_PARSER_H_INCLUDED
 /* Debug traces.  */
@@ -48,7 +51,7 @@
 extern int hsql_debug;
 #endif
 /* "%code requires" blocks.  */
-#line 35 "bison_parser.y" /* yacc.c:1919  */
+#line 35 "bison_parser.y" /* yacc.c:1912  */
 
 // %code requires block
 
@@ -72,7 +75,7 @@ extern int hsql_debug;
 				} \
 		}
 
-#line 76 "bison_parser.h" /* yacc.c:1919  */
+#line 79 "bison_parser.h" /* yacc.c:1912  */
 
 /* Token type.  */
 #ifndef HSQL_TOKENTYPE
@@ -230,7 +233,7 @@ extern int hsql_debug;
 
 union HSQL_STYPE
 {
-#line 95 "bison_parser.y" /* yacc.c:1919  */
+#line 95 "bison_parser.y" /* yacc.c:1912  */
 
 	double fval;
 	int64_t ival;
@@ -272,7 +275,7 @@ union HSQL_STYPE
 	std::vector<hsql::Expr*>* expr_vec;
 	std::vector<hsql::OrderDescription*>* order_vec;
 
-#line 276 "bison_parser.h" /* yacc.c:1919  */
+#line 279 "bison_parser.h" /* yacc.c:1912  */
 };
 
 typedef union HSQL_STYPE HSQL_STYPE;
