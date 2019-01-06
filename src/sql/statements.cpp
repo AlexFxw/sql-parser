@@ -162,7 +162,7 @@ namespace hsql {
     type(type),
     schema(nullptr),
     tableName(nullptr),
-    columns(nullptr),
+    // columns(nullptr),
     values(nullptr),
     select(nullptr) {}
 
@@ -171,16 +171,16 @@ namespace hsql {
     free(tableName);
     delete select;
 
-    if (columns != nullptr) {
-      for (char* column : *columns) {
-        free(column);
-      }
-      delete columns;
-    }
+    // if (columns != nullptr) {
+    //   for (char* column : *columns) {
+    //     free(column);
+    //   }
+    //   delete columns;
+    // }
 
     if (values != nullptr) {
-      for (Expr* expr : *values) {
-        delete expr;
+      for (InsertValue* insertValue : *values) {
+        delete insertValue;
       }
       delete values;
     }
@@ -216,7 +216,7 @@ namespace hsql {
 
   // GroypByDescription
   GroupByDescription::GroupByDescription() :
-    columns(nullptr),
+    // columns(nullptr),
     having(nullptr) {}
 
   GroupByDescription::~GroupByDescription() {

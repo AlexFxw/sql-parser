@@ -110,6 +110,8 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 	hsql::PrepareStatement* prep_stmt;
 	hsql::ExecuteStatement* exec_stmt;
 	hsql::ShowStatement*    show_stmt;
+	hsql::InsertValue* insert_value;
+	hsql::InsertValueList* value_list;
 
 	hsql::TableName table_name;
 	hsql::TableRef* table;
@@ -193,6 +195,8 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 %type <drop_stmt>	    drop_statement
 %type <show_stmt>	    show_statement
 %type <table_name>      table_name
+%type <insert_value>    insert_value
+%type <value_list>      value_list
 %type <sval> 		    file_path prepare_target_query
 %type <bval> 		    opt_not_exists opt_exists opt_distinct opt_column_nullable
 %type <uval>		    import_file_type opt_join_type
@@ -536,22 +540,35 @@ truncate_statement:
  * INSERT INTO employees SELECT * FROM stundents
  ******************************/
 insert_statement:
-		INSERT INTO table_name opt_column_list VALUES '(' literal_list ')' {
+		INSERT INTO table_name VALUES value_list insert_value {
 			$$ = new InsertStatement(kInsertValues);
 			$$->schema = $3.schema;
 			$$->tableName = $3.name;
-			$$->columns = $4;
-			$$->values = $7;
-		}
-	|	INSERT INTO table_name opt_column_list select_no_paren {
-			$$ = new InsertStatement(kInsertSelect);
-			$$->schema = $3.schema;
-			$$->tableName = $3.name;
-			$$->columns = $4;
-			$$->select = $5;
+			$$->values = $5->values;
+			$$->values->push_back($6);
 		}
 	;
 
+value_list:
+        value_list insert_value ','
+        {
+            $1->values->push_back($2);
+            $$ = $1;
+        }
+    |   /* empty */
+        {
+            $$ = new InsertValueList();
+            $$->values = new std::vector<InsertValue*>();
+        }
+    ;
+
+insert_value:
+        '(' literal_list ')'
+        {
+            $$ = new InsertValue();
+            $$->values = $2;
+        }
+    ;
 
 opt_column_list:
 		'(' ident_commalist ')' { $$ = $2; }

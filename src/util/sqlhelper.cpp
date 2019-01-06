@@ -211,17 +211,21 @@ namespace hsql {
   void printInsertStatementInfo(const InsertStatement* stmt, uintmax_t numIndent) {
     inprint("InsertStatment", numIndent);
     inprint(stmt->tableName, numIndent + 1);
-    if (stmt->columns != nullptr) {
-      inprint("Columns", numIndent + 1);
-      for (char* col_name : *stmt->columns) {
-        inprint(col_name, numIndent + 2);
-      }
-    }
+    // if (stmt->columns != nullptr) {
+    //   inprint("Columns", numIndent + 1);
+    //   for (char* col_name : *stmt->columns) {
+    //     inprint(col_name, numIndent + 2);
+    //   }
+    // }
     switch (stmt->type) {
     case kInsertValues:
       inprint("Values", numIndent + 1);
-      for (Expr* expr : *stmt->values) {
-        printExpression(expr, numIndent + 2);
+      for(InsertValue *insertValue: *stmt->values)
+      {
+        inprint("item", numIndent + 2);
+        for (Expr* expr : *insertValue->values) {
+          printExpression(expr, numIndent + 3);
+        }
       }
       break;
     case kInsertSelect:
