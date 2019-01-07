@@ -217,7 +217,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 %type <group_t>		    opt_group
 %type <alias_t>		    opt_table_alias table_alias opt_alias alias
 
-%type <str_vec>		ident_commalist opt_column_list
+%type <str_vec>		ident_commalist opt_column_list opt_primary_key
 %type <expr_vec> 	expr_list select_list opt_literal_list literal_list hint_list opt_hints
 %type <table_vec> 	table_ref_commalist
 %type <order_vec>	opt_order order_list
@@ -423,20 +423,13 @@ create_statement:
 			$$->tableName = $4.name;
 			$$->filePath = $8;
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist opt_primary_key ')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
 			$$->tableName = $4.name;
 			$$->columns = $6;
-		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' PRIMARY KEY '(' ident_commalist ')' ')' {
-			$$ = new CreateStatement(kCreateTable);
-			$$->ifNotExists = $3;
-			$$->schema = $4.schema;
-			$$->tableName = $4.name;
-			$$->columns = $6;
-			$$->primaryKeys = $11;
+			$$->primaryKeys = $7;
 
 		}
 	|	CREATE VIEW opt_not_exists table_name opt_column_list AS select_statement {
@@ -448,7 +441,11 @@ create_statement:
 			$$->select = $7;
 		}
 	;
-
+opt_primary_key:
+		',' PRIMARY KEY '(' ident_commalist ')' {
+			$$ = $5;
+		}
+	|	/* empty */ { $$ = nullptr; }
 opt_not_exists:
 		IF NOT EXISTS { $$ = true; }
 	|	/* empty */ { $$ = false; }
