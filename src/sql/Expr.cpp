@@ -1,6 +1,7 @@
 #include "Expr.h"
 #include <stdio.h>
 #include <string.h>
+#include<string>
 #include "SelectStatement.h"
 
 namespace hsql {
@@ -106,11 +107,13 @@ Expr* Expr::makeCase(Expr* expr, Expr* caseList, Expr* elseExpr) {
 Expr* Expr::makeLiteral(int64_t val) {
     Expr* e = new Expr(kExprLiteralInt);
     e->ival = val;
+    e->name = (char*)(std::to_string((int)val).c_str());
     return e;
 }
 
 Expr* Expr::makeLiteral(double value) {
     Expr* e = new Expr(kExprLiteralFloat);
+    e->name = (char*)(std::to_string(value).c_str());
     e->fval = value;
     return e;
 }
