@@ -112,6 +112,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 	hsql::ShowStatement*    show_stmt;
 	hsql::InsertValue* insert_value;
 	hsql::InsertValueList* value_list;
+	hsql::ForeignRelation* foreign_relation;
 
 	hsql::TableName table_name;
 	hsql::TableRef* table;
@@ -134,6 +135,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 	std::vector<hsql::UpdateClause*>* update_vec;
 	std::vector<hsql::Expr*>* expr_vec;
 	std::vector<hsql::OrderDescription*>* order_vec;
+	std::vector<ForeignRelation*>* foreign_vec;
 }
 
 
@@ -142,7 +144,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
  *********************************/
 %destructor { } <fval> <ival> <uval> <bval> <order_type> <datetime_field> <column_type_t>
 %destructor { free( ($$.name) ); free( ($$.schema) ); } <table_name>
-%destructor { free( ($$) ); } <sval>
+%destructor { free( ($$.key) ); } <sval>
 %destructor {
 	if (($$) != nullptr) {
 		for (auto ptr : *($$)) {
@@ -150,7 +152,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 		}
 	}
 	delete ($$);
-} <str_vec> <table_vec> <column_vec> <update_vec> <expr_vec> <order_vec> <stmt_vec>
+} <str_vec> <table_vec> <column_vec> <update_vec> <expr_vec> <order_vec> <stmt_vec> <foreign_vec>
 %destructor { delete ($$); } <*>
 
 
@@ -162,9 +164,9 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 %token <ival> INTVAL
 
 /* SQL Keywords */
-%token DEALLOCATE PARAMETERS INTERSECT TEMPORARY TIMESTAMP
+%token DEALLOCATE PARAMETERS INTERSECT TEMPORARY TIMESTAMP REFERENCES
 %token DISTINCT NVARCHAR RESTRICT TRUNCATE ANALYZE BETWEEN
-%token CASCADE COLUMNS CONTROL DEFAULT EXECUTE EXPLAIN
+%token CASCADE COLUMNS CONTROL DEFAULT EXECUTE EXPLAIN FOREIGN
 %token HISTORY INTEGER NATURAL PREPARE PRIMARY SCHEMAS
 %token SPATIAL VARCHAR VIRTUAL BEFORE COLUMN CREATE DELETE DIRECT
 %token DOUBLE ESCAPE EXCEPT EXISTS EXTRACT GLOBAL HAVING IMPORT
@@ -196,6 +198,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 %type <show_stmt>	    show_statement
 %type <table_name>      table_name
 %type <insert_value>    insert_value
+%type <foreign_relation> foreign_key
 %type <value_list>      value_list
 %type <sval> 		    file_path prepare_target_query
 %type <bval> 		    opt_not_exists opt_exists opt_distinct opt_column_nullable
@@ -223,6 +226,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 %type <order_vec>	opt_order order_list
 %type <update_vec>	update_clause_commalist
 %type <column_vec>	column_def_commalist
+%type <foreign_vec> opt_foreign_key_list foreign_key_list
 
 /******************************
  ** Token Precedence and Associativity
@@ -423,13 +427,14 @@ create_statement:
 			$$->tableName = $4.name;
 			$$->filePath = $8;
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist opt_primary_key ')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist opt_primary_key opt_foreign_key_list')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
 			$$->tableName = $4.name;
 			$$->columns = $6;
 			$$->primaryKeys = $7;
+			$$->foreignRelations = $8;
 
 		}
 	|	CREATE VIEW opt_not_exists table_name opt_column_list AS select_statement {
@@ -446,6 +451,28 @@ opt_primary_key:
 			$$ = $5;
 		}
 	|	/* empty */ { $$ = nullptr; }
+	;
+opt_foreign_key_list:	
+		foreign_key_list {
+			$$ = $1;
+		}
+	|	/* empty */ { $$ = nullptr; }
+	;
+foreign_key_list:
+		foreign_key {
+			$$ = new std::vector<ForeignRelation*>();
+			$$->push_back($1);
+		}
+	|	foreign_key_list foreign_key {
+			$1->push_back($3);
+			$$ = $1;
+		}
+	;
+foreign_key:
+	',' FOREIGN KEY '(' column_name ')' REFERENCES table_name '(' column_name ')' {
+		$$ = new ForeignRelation($5->name,$8->name,$10->name);
+	}
+	;
 opt_not_exists:
 		IF NOT EXISTS { $$ = true; }
 	|	/* empty */ { $$ = false; }

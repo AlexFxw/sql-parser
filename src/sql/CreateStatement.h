@@ -19,7 +19,22 @@ namespace hsql {
     VARCHAR,
     TEXT
   };
-
+  struct ForeignRelation
+  {
+      ForeignRelation(char* key,char* foreignTableName,char* foreignKey){
+        key = key;
+        foreignTableName = foreignTableName;
+        foreignKey = foreignKey;
+      }
+      char* key;
+      char* foreignTableName;
+      char* foreignKey;
+      ~ForeignRelation(){
+        free(key);
+        free(foreignTableName);
+        free(foreignKey);
+      }
+  };
   // Represents the type of a column, e.g., FLOAT or VARCHAR(10)
   struct ColumnType {
     ColumnType() = default;
@@ -63,6 +78,7 @@ namespace hsql {
     std::vector<char*>* viewColumns;
     SelectStatement* select;
     std::vector<char*>* primaryKeys;
+    std::vector<ForeignRelation*>* foreignRelations;
   };
 
 } // namespace hsql
