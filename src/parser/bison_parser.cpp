@@ -1710,13 +1710,13 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
     {
           case 3: /* IDENTIFIER  */
 #line 147 "bison_parser.y" /* yacc.c:1254  */
-      { free( (((*yyvaluep).sval).key) ); }
+      { free( (((*yyvaluep).sval)) ); }
 #line 1715 "bison_parser.cpp" /* yacc.c:1254  */
         break;
 
     case 4: /* STRING  */
 #line 147 "bison_parser.y" /* yacc.c:1254  */
-      { free( (((*yyvaluep).sval).key) ); }
+      { free( (((*yyvaluep).sval)) ); }
 #line 1721 "bison_parser.cpp" /* yacc.c:1254  */
         break;
 
@@ -1797,7 +1797,7 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
 
     case 174: /* prepare_target_query  */
 #line 147 "bison_parser.y" /* yacc.c:1254  */
-      { free( (((*yyvaluep).sval).key) ); }
+      { free( (((*yyvaluep).sval)) ); }
 #line 1802 "bison_parser.cpp" /* yacc.c:1254  */
         break;
 
@@ -1821,7 +1821,7 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
 
     case 178: /* file_path  */
 #line 147 "bison_parser.y" /* yacc.c:1254  */
-      { free( (((*yyvaluep).sval).key) ); }
+      { free( (((*yyvaluep).sval)) ); }
 #line 1826 "bison_parser.cpp" /* yacc.c:1254  */
         break;
 
@@ -3063,7 +3063,7 @@ yyreduce:
   case 41:
 #line 491 "bison_parser.y" /* yacc.c:1660  */
     {
-		(yyval.foreign_relation) = new ForeignRelation((yyvsp[-6].expr)->name,(yyvsp[-3].table_name)->name,(yyvsp[-1].expr)->name);
+		(yyval.foreign_relation) = new ForeignRelation((yyvsp[-6].expr)->name,(yyvsp[-3].table_name).name,(yyvsp[-1].expr)->name);
 	}
 #line 3069 "bison_parser.cpp" /* yacc.c:1660  */
     break;

@@ -144,7 +144,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
  *********************************/
 %destructor { } <fval> <ival> <uval> <bval> <order_type> <datetime_field> <column_type_t>
 %destructor { free( ($$.name) ); free( ($$.schema) ); } <table_name>
-%destructor { free( ($$.key) ); } <sval>
+%destructor { free( ($$) ); } <sval>
 %destructor {
 	if (($$) != nullptr) {
 		for (auto ptr : *($$)) {
@@ -489,7 +489,7 @@ foreign_key_list:
 	;
 foreign_key:
 	FOREIGN KEY '(' column_name ')' REFERENCES table_name '(' column_name ')' {
-		$$ = new ForeignRelation($4->name,$7->name,$9->name);
+		$$ = new ForeignRelation($4->name,$7.name,$9->name);
 	}
 	;
 opt_not_exists:
