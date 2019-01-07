@@ -279,7 +279,7 @@ union HSQL_STYPE
 	std::vector<hsql::UpdateClause*>* update_vec;
 	std::vector<hsql::Expr*>* expr_vec;
 	std::vector<hsql::OrderDescription*>* order_vec;
-	std::vector<ForeignRelation*>* foreign_vec;
+	std::vector<hsql::ForeignRelation*>* foreign_vec;
 
 #line 285 "bison_parser.h" /* yacc.c:1912  */
 };

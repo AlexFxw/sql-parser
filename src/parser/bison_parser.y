@@ -220,13 +220,13 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 %type <group_t>		    opt_group
 %type <alias_t>		    opt_table_alias table_alias opt_alias alias
 
-%type <str_vec>		ident_commalist opt_column_list opt_primary_key
+%type <str_vec>		ident_commalist opt_column_list primary_key
 %type <expr_vec> 	expr_list select_list opt_literal_list literal_list hint_list opt_hints
 %type <table_vec> 	table_ref_commalist
 %type <order_vec>	opt_order order_list
 %type <update_vec>	update_clause_commalist
 %type <column_vec>	column_def_commalist
-%type <foreign_vec> opt_foreign_key_list foreign_key_list
+%type <foreign_vec> foreign_key_list
 
 /******************************
  ** Token Precedence and Associativity
@@ -435,7 +435,7 @@ create_statement:
 			$$->columns = $6;
 
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' opt_primary_key ',' opt_foreign_key_list ')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' primary_key ',' foreign_key_list ')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
@@ -445,7 +445,7 @@ create_statement:
 			$$->foreignRelations = $10;
 
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' opt_primary_key ')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' primary_key ')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
@@ -454,7 +454,7 @@ create_statement:
 			$$->primaryKeys = $8;
 
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' opt_foreign_key_list ')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' foreign_key_list ')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
@@ -472,17 +472,10 @@ create_statement:
 			$$->select = $7;
 		}
 	;
-opt_primary_key:
+primary_key:
 		PRIMARY KEY '(' ident_commalist ')' {
-			$$ = $5;
+			$$ = $4;
 		}
-	|	/* empty */ { $$ = nullptr; }
-	;
-opt_foreign_key_list:	
-		foreign_key_list {
-			$$ = $1;
-		}
-	|	/* empty */ { $$ = nullptr; }
 	;
 foreign_key_list:
 		foreign_key {
@@ -490,13 +483,13 @@ foreign_key_list:
 			$$->push_back($1);
 		}
 	|	foreign_key_list ',' foreign_key {
-			$1->push_back($2);
+			$1->push_back($3);
 			$$ = $1;
 		}
 	;
 foreign_key:
 	FOREIGN KEY '(' column_name ')' REFERENCES table_name '(' column_name ')' {
-		$$ = new ForeignRelation($5->name,$8->name,$10->name);
+		$$ = new ForeignRelation($4->name,$7->name,$9->name);
 	}
 	;
 opt_not_exists:
