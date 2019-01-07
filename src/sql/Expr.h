@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <memory>
 #include <vector>
-
+#include <string.h>
 namespace hsql {
 struct SelectStatement;
 
@@ -101,6 +101,7 @@ struct Expr {
     double fval;
     int64_t ival;
     int64_t ival2;
+    std::string strName;
     DatetimeField datetimeField;
     bool isBoolLiteral;
 

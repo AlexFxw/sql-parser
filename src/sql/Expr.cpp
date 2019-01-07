@@ -107,13 +107,13 @@ Expr* Expr::makeCase(Expr* expr, Expr* caseList, Expr* elseExpr) {
 Expr* Expr::makeLiteral(int64_t val) {
     Expr* e = new Expr(kExprLiteralInt);
     e->ival = val;
-    e->name = (char*)(std::to_string((int)val).c_str());
+    e->strName = std::to_string((int)val);
     return e;
 }
 
 Expr* Expr::makeLiteral(double value) {
     Expr* e = new Expr(kExprLiteralFloat);
-    e->name = (char*)(std::to_string(value).c_str());
+    e->strName = std::to_string(value);
     e->fval = value;
     return e;
 }
@@ -121,6 +121,7 @@ Expr* Expr::makeLiteral(double value) {
 Expr* Expr::makeLiteral(char* string) {
     Expr* e = new Expr(kExprLiteralString);
     e->name = string;
+    e->strName = string;
     return e;
 }
 
