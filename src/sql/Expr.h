@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string.h>
+#include <string>
 namespace hsql {
 struct SelectStatement;
 
