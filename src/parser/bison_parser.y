@@ -135,7 +135,7 @@ int yyerror(YYLTYPE* llocp, SQLParserResult* result, yyscan_t scanner, const cha
 	std::vector<hsql::UpdateClause*>* update_vec;
 	std::vector<hsql::Expr*>* expr_vec;
 	std::vector<hsql::OrderDescription*>* order_vec;
-	std::vector<ForeignRelation*>* foreign_vec;
+	std::vector<hsql::ForeignRelation*>* foreign_vec;
 }
 
 
@@ -427,13 +427,39 @@ create_statement:
 			$$->tableName = $4.name;
 			$$->filePath = $8;
 		}
-	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist opt_primary_key opt_foreign_key_list')' {
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ')' {
 			$$ = new CreateStatement(kCreateTable);
 			$$->ifNotExists = $3;
 			$$->schema = $4.schema;
 			$$->tableName = $4.name;
 			$$->columns = $6;
-			$$->primaryKeys = $7;
+
+		}
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' opt_primary_key ',' opt_foreign_key_list ')' {
+			$$ = new CreateStatement(kCreateTable);
+			$$->ifNotExists = $3;
+			$$->schema = $4.schema;
+			$$->tableName = $4.name;
+			$$->columns = $6;
+			$$->primaryKeys = $8;
+			$$->foreignRelations = $10;
+
+		}
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' opt_primary_key ')' {
+			$$ = new CreateStatement(kCreateTable);
+			$$->ifNotExists = $3;
+			$$->schema = $4.schema;
+			$$->tableName = $4.name;
+			$$->columns = $6;
+			$$->primaryKeys = $8;
+
+		}
+	|	CREATE TABLE opt_not_exists table_name '(' column_def_commalist ',' opt_foreign_key_list ')' {
+			$$ = new CreateStatement(kCreateTable);
+			$$->ifNotExists = $3;
+			$$->schema = $4.schema;
+			$$->tableName = $4.name;
+			$$->columns = $6;
 			$$->foreignRelations = $8;
 
 		}
@@ -447,7 +473,7 @@ create_statement:
 		}
 	;
 opt_primary_key:
-		',' PRIMARY KEY '(' ident_commalist ')' {
+		PRIMARY KEY '(' ident_commalist ')' {
 			$$ = $5;
 		}
 	|	/* empty */ { $$ = nullptr; }
@@ -463,13 +489,13 @@ foreign_key_list:
 			$$ = new std::vector<ForeignRelation*>();
 			$$->push_back($1);
 		}
-	|	foreign_key_list foreign_key {
+	|	foreign_key_list ',' foreign_key {
 			$1->push_back($2);
 			$$ = $1;
 		}
 	;
 foreign_key:
-	',' FOREIGN KEY '(' column_name ')' REFERENCES table_name '(' column_name ')' {
+	FOREIGN KEY '(' column_name ')' REFERENCES table_name '(' column_name ')' {
 		$$ = new ForeignRelation($5->name,$8->name,$10->name);
 	}
 	;

@@ -25,6 +25,7 @@ namespace hsql {
         key = key;
         foreignTableName = foreignTableName;
         foreignKey = foreignKey;
+        printf("foreign%s %s %s\n", key,foreignTableName,foreignKey);
       }
       char* key;
       char* foreignTableName;
