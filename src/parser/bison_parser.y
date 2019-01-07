@@ -464,7 +464,7 @@ foreign_key_list:
 			$$->push_back($1);
 		}
 	|	foreign_key_list foreign_key {
-			$1->push_back($3);
+			$1->push_back($2);
 			$$ = $1;
 		}
 	;
