@@ -488,8 +488,8 @@ foreign_key_list:
 		}
 	;
 foreign_key:
-	FOREIGN KEY '(' column_name ')' REFERENCES table_name '(' column_name ')' {
-		$$ = new ForeignRelation($4->name,$7.name,$9->name);
+	FOREIGN KEY '(' IDENTIFIER ')' REFERENCES IDENTIFIER '(' IDENTIFIER ')' {
+		$$ = new ForeignRelation($4,$7,$9);
 	}
 	;
 opt_not_exists:

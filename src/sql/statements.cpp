@@ -70,7 +70,8 @@ namespace hsql {
     columns(nullptr),
     viewColumns(nullptr),
     select(nullptr),
-    primaryKeys(nullptr) {};
+    primaryKeys(nullptr),
+    foreignRelations(nullptr) {};
 
   CreateStatement::~CreateStatement() {
     free(filePath);
@@ -98,8 +99,25 @@ namespace hsql {
       }
       delete primaryKeys;
     }
-  }
 
+    if(foreignRelations != nullptr){
+      for(ForeignRelation* relation:*foreignRelations){
+        delete relation;
+      }
+      delete foreignRelations;
+    }
+  }
+  ForeignRelation::ForeignRelation(char* key,char* foreignTableName,char* foreignKey){
+        key = key;
+        foreignTableName = foreignTableName;
+        foreignKey = foreignKey;
+        printf("foreign%s %s %s\n", key,foreignTableName,foreignKey);
+      }
+  ForeignRelation::~ForeignRelation(){
+    free(key);
+    free(foreignTableName);
+    free(foreignKey);
+  }
   // DeleteStatement
   DeleteStatement::DeleteStatement() :
     SQLStatement(kStmtDelete),

@@ -21,20 +21,11 @@ namespace hsql {
   };
   struct ForeignRelation
   {
-      ForeignRelation(char* key,char* foreignTableName,char* foreignKey){
-        key = key;
-        foreignTableName = foreignTableName;
-        foreignKey = foreignKey;
-        printf("foreign%s %s %s\n", key,foreignTableName,foreignKey);
-      }
+      ForeignRelation(char* key,char* foreignTableName,char* foreignKey);
       char* key;
       char* foreignTableName;
       char* foreignKey;
-      ~ForeignRelation(){
-        free(key);
-        free(foreignTableName);
-        free(foreignKey);
-      }
+      virtual ~ForeignRelation();
   };
   // Represents the type of a column, e.g., FLOAT or VARCHAR(10)
   struct ColumnType {
