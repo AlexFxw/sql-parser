@@ -107,12 +107,10 @@ namespace hsql {
       delete foreignRelations;
     }
   }
-  ForeignRelation::ForeignRelation(char* key,char* foreignTableName,char* foreignKey){
-        key = key;
-        foreignTableName = foreignTableName;
-        foreignKey = foreignKey;
-        printf("foreign%s %s %s\n", key,foreignTableName,foreignKey);
-      }
+  ForeignRelation::ForeignRelation(char* key,char* foreignTableName,char* foreignKey):
+  key(key),
+  foreignTableName(foreignTableName),
+  foreignKey(foreignKey){};
   ForeignRelation::~ForeignRelation(){
     free(key);
     free(foreignTableName);
