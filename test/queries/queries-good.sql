@@ -26,6 +26,8 @@ CREATE TABLE "table" FROM TBL FILE 'students.tbl'
 CREATE TABLE IF NOT EXISTS "table" FROM TBL FILE 'students.tbl'
 CREATE TABLE students (name TEXT, student_number INTEGER, city TEXT, grade DOUBLE)
 CREATE TABLE teachers (name VARCHAR(30), student_number LONG, city CHAR(10), grade FLOAT)
+CREATE TABLE students_2 AS SELECT * FROM students
+CREATE TABLE students_3 AS SELECT city, grade FROM students WHERE grade > 3.0
 # Multiple statements
 CREATE TABLE "table" FROM TBL FILE 'students.tbl'; SELECT * FROM "table";
 # INSERT
@@ -52,9 +54,21 @@ PREPARE prep2 FROM 'INSERT INTO test VALUES (?, 0, 0); INSERT INTO test VALUES (
 EXECUTE prep_inst(1, 2, 3);
 EXECUTE prep;
 DEALLOCATE PREPARE prep;
+# COPY
+COPY students FROM 'student.tbl';
+COPY students FROM 'file_path' WITH FORMAT TBL;
+COPY students FROM 'file_path' WITH FORMAT CSV;
+COPY students FROM 'file_path' WITH FORMAT BIN;
+COPY students FROM 'file_path' WITH FORMAT BINARY;
+COPY students TO 'student.tbl';
+COPY students TO 'file_path' WITH FORMAT TBL;
+COPY students TO 'file_path' WITH FORMAT CSV;
+COPY students TO 'file_path' WITH FORMAT BIN;
+COPY students TO 'file_path' WITH FORMAT BINARY;
 # HINTS
 SELECT * FROM test WITH HINT(NO_CACHE);
 SELECT * FROM test WITH HINT(NO_CACHE, NO_SAMPLING);
 SELECT * FROM test WITH HINT(NO_CACHE, SAMPLE_RATE(0.1), OMW(1.0, 'test'));
 SHOW TABLES;
 SHOW COLUMNS students;
+DESCRIBE students;

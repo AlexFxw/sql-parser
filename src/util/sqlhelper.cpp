@@ -1,12 +1,15 @@
 
 #include "sqlhelper.h"
 #include <iostream>
+#include <map>
 #include <string>
 
 namespace hsql {
 
   void printOperatorExpression(Expr* expr, uintmax_t numIndent);
   void printAlias(Alias* alias, uintmax_t numIndent);
+
+  std::ostream& operator<<(std::ostream& os, const OperatorType& op);
 
   std::string indent(uintmax_t numIndent) {
     return std::string(numIndent, '\t');
@@ -26,8 +29,8 @@ namespace hsql {
   void inprintC(char val, uintmax_t numIndent) {
     std::cout << indent(numIndent).c_str() << val << std::endl;
   }
-  void inprintU(uint64_t val, uintmax_t numIndent) {
-    std::cout << indent(numIndent).c_str() << val << std::endl;
+  void inprint(const OperatorType& op, uintmax_t numIndent) {
+    std::cout << indent(numIndent) << op << std::endl;
   }
 
   void printTableRefInfo(TableRef* table, uintmax_t numIndent) {
@@ -78,20 +81,8 @@ namespace hsql {
       return;
     }
 
-    switch (expr->opType) {
-    case kOpAnd:
-      inprint("AND", numIndent);
-      break;
-    case kOpOr:
-      inprint("OR", numIndent);
-      break;
-    case kOpNot:
-      inprint("NOT", numIndent);
-      break;
-    default:
-      inprintU(expr->opType, numIndent);
-      break;
-    }
+    inprint(expr->opType, numIndent);
+
     printExpression(expr->expr, numIndent + 1);
     if (expr->expr2 != nullptr) {
         printExpression(expr->expr2, numIndent + 1);
@@ -101,6 +92,7 @@ namespace hsql {
   }
 
   void printExpression(Expr* expr, uintmax_t numIndent) {
+    if (!expr) return;
     switch (expr->type) {
     case kExprStar:
       inprint("*", numIndent);
@@ -176,9 +168,41 @@ namespace hsql {
       }
     }
 
-    if (stmt->unionSelect != nullptr) {
-      inprint("Union:", numIndent + 1);
-      printSelectStatementInfo(stmt->unionSelect, numIndent + 2);
+    if (stmt->setOperations != nullptr) {
+      for (SetOperation* setOperation : *stmt->setOperations) {
+        switch (setOperation->setType) {
+          case SetType::kSetIntersect:
+            inprint("Intersect:", numIndent + 1);
+            break;
+          case SetType::kSetUnion:
+            inprint("Union:", numIndent + 1);
+            break;
+          case SetType::kSetExcept:
+            inprint("Except:", numIndent + 1);
+            break;
+        }
+
+        printSelectStatementInfo(setOperation->nestedSelectStatement, numIndent + 2);
+
+        if (setOperation->resultOrder != nullptr) {
+          inprint("SetResultOrderBy:", numIndent + 1);
+          printExpression(setOperation->resultOrder->at(0)->expr, numIndent + 2);
+          if (setOperation->resultOrder->at(0)->type == kOrderAsc) inprint("ascending", numIndent + 2);
+          else inprint("descending", numIndent + 2);
+        }
+
+        if (setOperation->resultLimit != nullptr) {
+          if (setOperation->resultLimit->limit != nullptr) {
+            inprint("SetResultLimit:", numIndent + 1);
+            printExpression(setOperation->resultLimit->limit, numIndent + 2);
+          }
+
+          if (setOperation->resultLimit->offset != nullptr) {
+            inprint("SetResultOffset:", numIndent + 1);
+            printExpression(setOperation->resultLimit->offset, numIndent + 2);
+          }
+        }
+      }
     }
 
     if (stmt->order != nullptr) {
@@ -188,28 +212,67 @@ namespace hsql {
       else inprint("descending", numIndent + 2);
     }
 
-    if (stmt->limit != nullptr) {
+    if (stmt->limit != nullptr && stmt->limit->limit != nullptr) {
       inprint("Limit:", numIndent + 1);
-      inprint(stmt->limit->limit, numIndent + 2);
+      printExpression(stmt->limit->limit, numIndent + 2);
+    }
+
+    if (stmt->limit != nullptr && stmt->limit->offset != nullptr) {
+      inprint("Offset:", numIndent + 1);
+      printExpression(stmt->limit->offset, numIndent + 2);
     }
   }
 
 
 
   void printImportStatementInfo(const ImportStatement* stmt, uintmax_t numIndent) {
-    inprint("ImportStatment", numIndent);
+    inprint("ImportStatement", numIndent);
     inprint(stmt->filePath, numIndent + 1);
+    switch (stmt->type) {
+      case ImportType::kImportCSV:
+        inprint("CSV", numIndent + 1);
+        break;
+      case ImportType::kImportTbl:
+        inprint("TBL", numIndent + 1);
+        break;
+      case ImportType::kImportBinary:
+        inprint("BINARY", numIndent + 1);
+        break;
+      case ImportType::kImportAuto:
+        inprint("AUTO", numIndent + 1);
+        break;
+    }
+    inprint(stmt->tableName, numIndent + 1);
+  }
+
+  void printExportStatementInfo(const ExportStatement* stmt, uintmax_t numIndent) {
+    inprint("ExportStatement", numIndent);
+    inprint(stmt->filePath, numIndent + 1);
+    switch (stmt->type) {
+      case ImportType::kImportCSV:
+        inprint("CSV", numIndent + 1);
+        break;
+      case ImportType::kImportTbl:
+        inprint("TBL", numIndent + 1);
+        break;
+      case ImportType::kImportBinary:
+        inprint("BINARY", numIndent + 1);
+        break;
+      case ImportType::kImportAuto:
+        inprint("AUTO", numIndent + 1);
+        break;
+    }
     inprint(stmt->tableName, numIndent + 1);
   }
 
   void printCreateStatementInfo(const CreateStatement* stmt, uintmax_t numIndent) {
-    inprint("CreateStatment", numIndent);
+    inprint("CreateStatement", numIndent);
     inprint(stmt->tableName, numIndent + 1);
-    inprint(stmt->filePath, numIndent + 1);
+    if (stmt->filePath) inprint(stmt->filePath, numIndent + 1);
   }
 
   void printInsertStatementInfo(const InsertStatement* stmt, uintmax_t numIndent) {
-    inprint("InsertStatment", numIndent);
+    inprint("InsertStatement", numIndent);
     inprint(stmt->tableName, numIndent + 1);
     // if (stmt->columns != nullptr) {
     //   inprint("Columns", numIndent + 1);
@@ -234,6 +297,21 @@ namespace hsql {
     }
   }
 
+  void printTransactionStatementInfo(const TransactionStatement* stmt, uintmax_t numIndent) {
+    inprint("TransactionStatement", numIndent);
+    switch (stmt->command){
+    case kBeginTransaction:
+      inprint("BEGIN", numIndent + 1);
+      break;
+    case kCommitTransaction:
+      inprint("COMMIT", numIndent + 1);
+      break;
+    case kRollbackTransaction:
+      inprint("ROLLBACK", numIndent + 1);
+      break;
+    }
+  }
+
   void printStatementInfo(const SQLStatement* stmt) {
     switch (stmt->type()) {
     case kStmtSelect:
@@ -248,8 +326,53 @@ namespace hsql {
     case kStmtImport:
       printImportStatementInfo((const ImportStatement*) stmt, 0);
       break;
+    case kStmtExport:
+      printExportStatementInfo((const ExportStatement*) stmt, 0);
+      break;
+    case kStmtTransaction:
+      printTransactionStatementInfo((const TransactionStatement*) stmt, 0);
+      break;
     default:
       break;
+    }
+  }
+
+  std::ostream& operator<<(std::ostream& os, const OperatorType& op) {
+    static const std::map<const OperatorType, const std::string> operatorToToken = {
+      {kOpNone, "None"},
+      {kOpBetween, "BETWEEN"},
+      {kOpCase, "CASE"},
+      {kOpCaseListElement, "CASE LIST ELEMENT"},
+      {kOpPlus, "+"},
+      {kOpMinus, "-"},
+      {kOpAsterisk, "*"},
+      {kOpSlash, "/"},
+      {kOpPercentage, "%"},
+      {kOpCaret, "^"},
+      {kOpEquals, "="},
+      {kOpNotEquals, "!="},
+      {kOpLess, "<"},
+      {kOpLessEq, "<="},
+      {kOpGreater, ">"},
+      {kOpGreaterEq, ">="},
+      {kOpLike, "LIKE"},
+      {kOpNotLike, "NOT LIKE"},
+      {kOpILike, "ILIKE"},
+      {kOpAnd, "AND"},
+      {kOpOr, "OR"},
+      {kOpIn, "IN"},
+      {kOpConcat, "CONCAT"},
+      {kOpNot, "NOT"},
+      {kOpUnaryMinus, "-"},
+      {kOpIsNull, "IS NULL"},
+      {kOpExists, "EXISTS"}
+    };
+
+    const auto found = operatorToToken.find(op);
+    if (found == operatorToToken.cend()) {
+      return os << static_cast<uint64_t>(op);
+    } else {
+      return os << (*found).second;
     }
   }
 

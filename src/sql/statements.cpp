@@ -129,7 +129,7 @@ namespace hsql {
     delete expr;
   }
 
-  // DropStatament
+  // DropStatement
   DropStatement::DropStatement(DropType type) :
     SQLStatement(kStmtDrop),
     type(type),
@@ -140,6 +140,14 @@ namespace hsql {
     free(schema);
     free(name);
   }
+
+  // TransactionStatement
+  TransactionStatement::TransactionStatement(TransactionCommand command) :
+    SQLStatement(kStmtTransaction),
+    command(command) {}
+
+  TransactionStatement::~TransactionStatement() {}
+
 
   // ExecuteStatement
   ExecuteStatement::ExecuteStatement() :
@@ -156,6 +164,20 @@ namespace hsql {
       }
       delete parameters;
     }
+  }
+
+  // ExportStatement
+  ExportStatement::ExportStatement(ImportType type) :
+    SQLStatement(kStmtExport),
+    type(type),
+    filePath(nullptr),
+    schema(nullptr),
+    tableName(nullptr) {};
+
+  ExportStatement::~ExportStatement() {
+    free(filePath);
+    free(schema);
+    free(tableName);
   }
 
   // ImportStatement
@@ -226,9 +248,14 @@ namespace hsql {
   }
 
   // LimitDescription
-  LimitDescription::LimitDescription(int64_t limit, int64_t offset) :
-    limit(limit >= 0 ? limit : kNoLimit),
-    offset(offset > 0 ? offset : kNoOffset) {}
+  LimitDescription::LimitDescription(Expr* limit, Expr* offset) :
+    limit(limit),
+    offset(offset) {}
+
+  LimitDescription::~LimitDescription() {
+    delete limit;
+    delete offset;
+  }
 
   // GroypByDescription
   GroupByDescription::GroupByDescription() :
@@ -246,6 +273,11 @@ namespace hsql {
     }
   }
 
+  WithDescription::~WithDescription() {
+    free(alias);
+    delete select;
+  }
+
   // SelectStatement
   SelectStatement::SelectStatement() :
     SQLStatement(kStmtSelect),
@@ -254,15 +286,15 @@ namespace hsql {
     selectList(nullptr),
     whereClause(nullptr),
     groupBy(nullptr),
-    unionSelect(nullptr),
+    setOperations(nullptr),
     order(nullptr),
+    withDescriptions(nullptr),
     limit(nullptr) {};
 
   SelectStatement::~SelectStatement() {
     delete fromTable;
     delete whereClause;
     delete groupBy;
-    delete unionSelect;
     delete limit;
 
     // Delete each element in the select list.
@@ -278,6 +310,20 @@ namespace hsql {
         delete desc;
       }
       delete order;
+    }
+
+    if (withDescriptions != nullptr) {
+      for (WithDescription* desc : *withDescriptions) {
+        delete desc;
+      }
+      delete withDescriptions;
+    }
+
+    if (setOperations != nullptr) {
+      for (SetOperation* setOperation : *setOperations) {
+        delete setOperation;
+      }
+      delete setOperations;
     }
   }
 
@@ -363,6 +409,23 @@ namespace hsql {
     delete left;
     delete right;
     delete condition;
+  }
+
+  SetOperation::SetOperation() : 
+    nestedSelectStatement(nullptr), 
+    resultOrder(nullptr),
+    resultLimit(nullptr) {}
+
+  SetOperation::~SetOperation() {
+    delete nestedSelectStatement;
+    delete resultLimit;
+
+    if (resultOrder != nullptr) {
+      for (OrderDescription* desc: *resultOrder) {
+        delete desc;
+      }
+      delete resultOrder;
+    }
   }
 
 } // namespace hsql
